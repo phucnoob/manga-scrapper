@@ -1,8 +1,0 @@
-- Lấy thông tin về tất cả truyện
-- Lấy thông tin về chapter, ảnh
-- Export ra .sql hoặc json.
-
-Vấn đề:
-- Cào 1 bộ manga
-    + Lấy thông tin -> insert 
-    + Lấy chapter , các images -> upload image lên drive 
