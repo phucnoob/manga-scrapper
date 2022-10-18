@@ -7,7 +7,8 @@ readme = "README.md"
 packages = [{include = "manga_scraper"}]
 
 [tool.poetry.scripts]
-start = "manga_scraper.main:start"
+list = "manga_scraper.list:start"
+info = "manga_scraper.info:start"
 
 
 [tool.poetry.dependencies]
@@ -15,6 +16,8 @@ python = "^3.10"
 aiohttp = {extras = ["speedups"], version = "^3.8.3"}
 beautifulsoup4 = "^4.11.1"
 lxml = "^4.9.1"
+mysql-connector-python = "^8.0.31"
+aiofile = "^3.8.1"
 
 
 [tool.poetry.group.dev.dependencies]

@@ -1,21 +1,18 @@
+"""Parse the website and print all manga link
+"""
 import asyncio
-from enum import Enum, IntEnum
+from enum import IntEnum
 
 import aiohttp
 from bs4 import BeautifulSoup
-from . import config
+from . import commons
 
 
 DOMAIN_NAME = "https://blogtruyen.vn"
-parsed_urls = 0
+MAX_PAGES = 1179
 
 
-async def make_request(session: aiohttp.ClientSession, url: str, payload: dict):
-    async with session.get(url, headers=config.headers, params=payload) as response:
-        return await response.text()
-
-
-def get_manga_list(html):
+async def get_manga_list(html):
     try:
         soup = BeautifulSoup(html, "lxml")
         main_div = soup.select_one(".list")
@@ -23,7 +20,7 @@ def get_manga_list(html):
             url = f"{DOMAIN_NAME}{item.attrs['href']}"
             print(url)
             # print(url)
-    except Exception:
+    except Exception:  # pylint: disable=broad-except
         print("Error.")
 
 
@@ -43,14 +40,14 @@ async def main():
             "orderBy": OrderBy.VIEWS,
             "p": 1
         }
-        for page in range(1, 1780):
+        for page in range(1, MAX_PAGES + 1):
             payload["p"] = page
             await parse_data(session, url, payload)
 
 
 async def parse_data(session, url, payload):
-    html = await make_request(session, url, payload)
-    get_manga_list(html)
+    html = await commons.make_request(session, url, payload)
+    await get_manga_list(html)
 
 
 def start():

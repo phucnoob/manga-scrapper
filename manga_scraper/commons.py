@@ -1,5 +1,8 @@
 # pylint: skip-file
 
+import aiohttp
+
+
 headers = {
     "Connection": "keep-alive",
     "sec-ch-ua": "\"Microsoft Edge\";v=\"105\", \" Not;A Brand\";v=\"99\", \"Chromium\";v=\"105\"",
@@ -15,3 +18,8 @@ headers = {
     "Accept-Encoding": "gzip, deflate, br",
     "Accept-Language": "en-US,en;q=0.9,vi;q=0.8"
 }
+
+
+async def make_request(session: aiohttp.ClientSession, url: str, payload: dict):
+    async with session.get(url, headers=headers, params=payload) as response:
+        return await response.text()
