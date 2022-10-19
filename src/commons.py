@@ -45,7 +45,7 @@ async def select(soup: BeautifulSoup, selector: str, attr: str = "text"):
 async def select_one(soup: BeautifulSoup, selector: str, attr: str = "text"):
     result = await select(soup, selector, attr)
     if result is None:
-        return None
+        return ""
 
     return result[0]
 

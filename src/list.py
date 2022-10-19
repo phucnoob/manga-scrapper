@@ -1,43 +1,34 @@
 """Parse the website and print all manga link
 """
 import asyncio
+import json
 from enum import IntEnum
+from urllib import parse
 
 import aiohttp
 from bs4 import BeautifulSoup
 
 import commons
 
-DOMAIN_NAME = "https://blogtruyen.vn"
-MAX_PAGES = 1179
-CURRENT_MANGAS = 23567
 
 manga_url_pool = set()
 
 
-async def fetch_mangas_count(session: aiohttp.ClientSession, url="https://blogtruyen.vn/danhsach/tatca"):
+async def get_last_page(session: aiohttp.ClientSession, url):
     html = await commons.request_get(session, url, delay=1)
     soup = BeautifulSoup(html, "lxml")
 
-    text = await commons.select(
-        soup, "#wrapper > section.main-content > div > div.col-md-8 > div > section > div.head.uppercase")
+    link = await commons.select_one(soup, ".pagination > li:last-child a", "href")
+    page = parse.parse_qs(parse.urlparse(link).query)["page"][0]
 
-    return int(text.split()[1])
+    return int(page)
 
 
-async def get_manga_list(html):
-    try:
-        soup = BeautifulSoup(html, "lxml")
-        main_div = soup.select_one(".list")
-        for item in main_div.select("p>span>a"):
-            manga_url_pool.add(item.attrs['href'])
-            url = f"{DOMAIN_NAME}{item.attrs['href']}"
-            print(url)
-            # print(url)
-    except Exception:  # pylint: disable=broad-except
-        return False
+async def get_manga_list(html, config):
+    soup = BeautifulSoup(html, "lxml")
+    links = await commons.select(soup, config["selector"]["link_from_search"], "href")
 
-    return True
+    return links
 
 
 class OrderBy(IntEnum):
@@ -48,43 +39,40 @@ class OrderBy(IntEnum):
     TIME = 5
 
 
-async def main():
+async def main(config: dict):
 
-    with open("mangas.txt", "r", encoding='utf-8') as init_data:
+    with open("data/mangas.txt", "r", encoding='utf-8') as init_data:
         for line in init_data:
             manga_url_pool.add(line)
 
     async with aiohttp.ClientSession() as session:
-        manga_count = await fetch_mangas_count(session)
-        if manga_count < len(manga_url_pool):
-            return
 
-        url = "https://blogtruyen.vn/ajax/Search/AjaxLoadListManga"
+        url = config["search"]
+        last_page = await get_last_page(session, url)
         payload = {
-            "key": "tatca",
-            "orderBy": OrderBy.VIEWS,
-            "p": 1
+            "page": 1
         }
-        page = len(manga_url_pool) // 20 + 1
-        should_continue = True
-        while should_continue:
-            payload["p"] = page
-            page += 1
-            should_continue = await parse_data(session, url, payload)
+        for page in range(1, last_page + 1):
+            payload["page"] = page
+            await parse_data(session, url, payload, config)
 
     with open("mangas.txt", "w", encoding='utf-8') as out_data:
         for url in manga_url_pool:
             out_data.write(f"{url}\n")
 
 
-async def parse_data(session, url, payload):
+async def parse_data(session, url, payload, config):
     html = await commons.request_get(session, url, payload, delay=0.2)
-    return await get_manga_list(html)
+    manga_links = await get_manga_list(html, config)
+    print(json.dumps(manga_links, indent=4))
+    manga_url_pool.update(manga_links)
 
 
 def start():
-    loop = asyncio.new_event_loop()
-    loop.run_until_complete(main())
+    with open("data/nettruyen.json", "r", encoding="utf-8") as config_file:
+        config = json.load(config_file)
+        loop = asyncio.new_event_loop()
+        loop.run_until_complete(main(config))
 
 
 if __name__ == '__main__':

@@ -1,0 +1,16 @@
+{
+  "url": "https://www.nettruyenme.com",
+  "search": "https://www.nettruyenme.com/tim-truyen-nang-cao?genres=&notgenres=13,15,17,21,24,25&gender=-1&status=-1&minchapter=1&sort=0",
+  "ajax_search": "https://www.nettruyenme.com/Comic/Services/SuggestSearch.ashx?q={}",
+  "selector": {
+    "link_from_search": ".items .item .image a:first-child",
+    "name": "#item-detail > .title-detail",
+    "otherName": "#item-detail .other-name",
+    "author": "#item-detail .author > p:last-child > a",
+    "cover": "#item-detail .col-image img",
+    "description": "#item-detail .detail-content > p",
+    "status": "#item-detail .status > p:last-child",
+    "genres": "#item-detail .kind > p:last-child a",
+    "chapters": "#nt_listchapter .chapter a"
+  }
+}

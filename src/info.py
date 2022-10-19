@@ -3,12 +3,14 @@ import json
 import sys
 
 from pathlib import Path
+from urllib.parse import urlparse
+
 from aiofile import async_open
 import aiohttp
 from bs4 import BeautifulSoup
 from commons import download_image, request_get, select, select_one
 
-DOMAIN_NAME = "https://blogtruyen.vn"
+DOMAIN_NAME = ""
 manga_template = {
     "author": "",
     "cover": "",
@@ -24,21 +26,23 @@ chapter_info_template = {
     "src": ""
 }
 
-config = None
-
 
 async def main(config: dict = None):
     async with aiohttp.ClientSession() as session:
-        with open("mangas.txt", encoding="utf-8") as urls_file:
+        with open("data/mangas.txt", encoding="utf-8") as urls_file:
             for (index, path) in enumerate(urls_file):
-                url = f"{config['url']}{path}"
-                html = await request_get(session, url, None)
+                url = path
+                html = await request_get(session, url, delay=1)
                 manga = await parse_info(html, config)
-                data = json.dumps(manga, ensure_ascii=False)
+                data = json.dumps(manga, ensure_ascii=False, indent=4)
+
+                print(data)
                 local_host = "http://localhost:8080/api/v1/manga/add"
-                response = await session.post(local_host, json=data)
+                response = await session.post(local_host, json=manga)
                 print(f"Server#\n {await response.json()}")
 
+                if index > 100:
+                    break
                 # print(manga)
                 # print(f"Manga[{manga['name']}]")
                 # manga_path = await save_info(manga)
@@ -103,16 +107,20 @@ async def parse_info(html, config: dict):
 
         manga["status"] = await select_one(soup, selector["status"])
 
-        manga["description"] = await select(soup, selector["description"])
+        manga["description"] = await select_one(soup, selector["description"])
 
-        manga["author"] = await select(soup, selector["author"])
+        manga["author"] = await select_one(soup, selector["author"])
 
-        manga["cover"] = await select(soup, selector["cover"], "src")
+        manga["cover"] = await select_one(soup, selector["cover"], "src")
 
+        protocol = urlparse(config['url']).scheme
+        manga["cover"] = f"{protocol}:{manga['cover']}"
+
+        return manga
     except AttributeError as error:
         print(error)
 
-    return manga
+    return None
 
 
 async def parse_chapters(html: str):
