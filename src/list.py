@@ -16,7 +16,7 @@ manga_url_pool = set()
 
 
 async def fetch_mangas_count(session: aiohttp.ClientSession, url="https://blogtruyen.vn/danhsach/tatca"):
-    html = await commons.make_request(session, url, delay=1)
+    html = await commons.request_get(session, url, delay=1)
     soup = BeautifulSoup(html, "lxml")
 
     text = await commons.select(
@@ -62,10 +62,10 @@ async def main():
         url = "https://blogtruyen.vn/ajax/Search/AjaxLoadListManga"
         payload = {
             "key": "tatca",
-            "orderBy": OrderBy.TIME,
+            "orderBy": OrderBy.VIEWS,
             "p": 1
         }
-        page = 1
+        page = len(manga_url_pool) // 20 + 1
         should_continue = True
         while should_continue:
             payload["p"] = page
@@ -78,10 +78,14 @@ async def main():
 
 
 async def parse_data(session, url, payload):
-    html = await commons.make_request(session, url, payload, delay=1)
+    html = await commons.request_get(session, url, payload, delay=0.2)
     return await get_manga_list(html)
 
 
 def start():
     loop = asyncio.new_event_loop()
     loop.run_until_complete(main())
+
+
+if __name__ == '__main__':
+    start()

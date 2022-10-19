@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 aiohttp = {extras = ["speedups"], version = "*"}
 aiofile = "*"
+beautifulsoup4 = "*"
 
 [dev-packages]
 

@@ -4,7 +4,6 @@ import asyncio
 import aiohttp
 from bs4 import BeautifulSoup
 
-
 headers = {
     "Connection": "keep-alive",
     "sec-ch-ua": "\"Microsoft Edge\";v=\"105\", \" Not;A Brand\";v=\"99\", \"Chromium\";v=\"105\"",
@@ -22,7 +21,7 @@ headers = {
 }
 
 
-async def make_request(session: aiohttp.ClientSession, url: str, payload=None, headers=headers, delay=5):
+async def request_get(session: aiohttp.ClientSession, url: str, payload=None, headers=headers, delay=5):
     async with session.get(url, headers=headers, params=payload) as response:
         print(f"Response: {response.status}")
         print(f"Sleep for {delay} seconds.")
@@ -31,15 +30,27 @@ async def make_request(session: aiohttp.ClientSession, url: str, payload=None, h
 
 
 async def select(soup: BeautifulSoup, selector: str, attr: str = "text"):
-    tag = soup.select_one(selector)
-    if tag is None:
+    tags = soup.select(selector)
+    if tags is None or len(tags) == 0:
         return None
-    else:
-        return tag.attrs[attr].strip() if attr != "text" else tag.text.strip()
+
+    def func(tag):
+        return tag.get_text(strip=True) if attr == "text" else tag.attrs[attr].strip()
+
+    texts = map(func, tags)
+
+    return list(texts)
+
+
+async def select_one(soup: BeautifulSoup, selector: str, attr: str = "text"):
+    result = await select(soup, selector, attr)
+    if result is None:
+        return None
+
+    return result[0]
 
 
 async def download_image(session: aiohttp.ClientSession, url: str, payload=None, headers: dict = headers):
-
     headers["referer"] = "https://blogtruyen.vn"
     async with session.get(url, headers=headers) as response:
         print(f"# Download image: {response.status}")
