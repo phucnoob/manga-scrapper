@@ -81,14 +81,16 @@ async def save_info(manga):
     return manga_dir
 
 
-async def parse_chapter_images(session: aiohttp.ClientSession, chapter: dict):
+async def parse_chapter_images(session: aiohttp.ClientSession, config, chapter: dict):
     url = chapter["src"]
-    html = await request_get(session, url)
+    protocol = urlparse(url).scheme
+
+    html = await request_get(session, url, delay=0.2)
     soup = BeautifulSoup(html, "lxml")
 
-    images = soup.select("#content > img")
+    images = soup.select(config["selector"]["images"])
 
-    return list(map(lambda tag: tag.attrs["src"], images))
+    return list(map(lambda tag: f"{protocol}:{tag.attrs['src']}", images))
 
 
 # pylint: disable=line-too-long
@@ -121,16 +123,17 @@ async def parse_info_from_html(html: str, config: dict):
     return None
 
 
-async def parse_info(session: aiohttp.ClientSession, url: str, config: dict, delay=1):
+async def parse_info(session: aiohttp.ClientSession, url: str, config: dict, delay=1) -> tuple:
     html = await request_get(session, url, delay=delay)
     manga = await parse_info_from_html(html, config)
+    chapters_url = await parse_chapters(html, config)
 
-    return manga
+    return manga, chapters_url
 
 
-async def parse_chapters(html: str):
+async def parse_chapters(html: str, config):
     soup = BeautifulSoup(html, "lxml")
-    tags = soup.select("#loadChapter span.title > a")
+    tags = soup.select(config["selector"]["chapters"])
     chapters = []
     for tag in tags:
         chapter = chapter_info_template.copy()

@@ -17,7 +17,7 @@ import aiohttp
 import commons
 import info
 from list import manga_list
-
+from src import models, upload
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -28,13 +28,23 @@ async def main():
         last_update = time.time()
         mangas = manga_list(config, last_update)
         async for manga_url in mangas:
-            manga_info = await info.parse_info(session, manga_url, config, delay=0.2)
-            local_host = "http://localhost:8080/api/v1/manga/add"
-            response = await session.post(local_host, json=manga_info)
-            logging.debug(f"Server#\n {await response.json()}")
 
+            manga_info, chapters = await info.parse_info(session, manga_url, config, delay=0.2)
+            manga_id = models.insert_manga(manga_url)
+            db_chapters = models.manga_chapters(manga_id)
+
+            db_id = await upload.upload_manga(session, manga_info)
+            if db_id is None:
+                continue
+            for ch in chapters:
+                if ch["src"] not in db_chapters:
+                    chapter_images = await info.parse_chapter_images(session, config, ch)
+                    chapter_json = dict(name=ch["name"], images=chapter_images)
+                    await upload.upload_chapter(session, db_id, chapter_json)
+
+            models.commit()
             c += 1
-            if c > 100:
+            if c > 10:
                 await commons.cancel_gen(mangas)
 
 
