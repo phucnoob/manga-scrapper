@@ -1,3 +1,0 @@
-- Lấy thông tin về tất cả truyện
-- Lấy thông tin về chapter, ảnh
-- Export ra .sql hoặc json.
