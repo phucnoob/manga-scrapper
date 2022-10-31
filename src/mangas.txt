@@ -1,0 +1,28 @@
+Chi can luu:
+- lan cap nhat truoc
+- truyen da co trong db chua?
+- chapter da co trong db chua?
+-> truyen can co
+- url
+- last update.
+- manga_id
+
+chapter
+- url
+- last update
+- manga_id ? which manga do i belong to
+
+10 phut chay 1 lan
+
+tim kiem danh sach manga
+-> tim nhu nao
+tra ve 1 generator Done
+-> pass cho thg info de lay thong tin
+-> nem len server( server tu update neu can ) ? optimize ?
+
+neu co trong db -> cap nhat chapter
+thoi gian cap nhat som hon last_update thi dung.
+
+neu k co -> lay info va request ve server
+
+cap nhat chapter nhu nao?

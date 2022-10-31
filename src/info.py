@@ -92,9 +92,7 @@ async def parse_chapter_images(session: aiohttp.ClientSession, chapter: dict):
 
 
 # pylint: disable=line-too-long
-
-
-async def parse_info(html, config: dict):
+async def parse_info_from_html(html: str, config: dict):
     try:
         soup = BeautifulSoup(html, "lxml")
         selector = config["selector"]
@@ -121,6 +119,13 @@ async def parse_info(html, config: dict):
         print(error)
 
     return None
+
+
+async def parse_info(session: aiohttp.ClientSession, url: str, config: dict, delay=1):
+    html = await request_get(session, url, delay=delay)
+    manga = await parse_info_from_html(html, config)
+
+    return manga
 
 
 async def parse_chapters(html: str):

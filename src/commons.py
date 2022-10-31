@@ -1,8 +1,13 @@
 # pylint: skip-file
 
 import asyncio
+from contextlib import suppress
+
 import aiohttp
+import logging
 from bs4 import BeautifulSoup
+
+logger = logging.getLogger(__name__)
 
 headers = {
     "Connection": "keep-alive",
@@ -23,8 +28,9 @@ headers = {
 
 async def request_get(session: aiohttp.ClientSession, url: str, payload=None, headers=headers, delay=5):
     async with session.get(url, headers=headers, params=payload) as response:
-        print(f"Response: {response.status}")
-        print(f"Sleep for {delay} seconds.")
+        logger.debug(f"Url: {response.url}")
+        logger.debug(f"Response: {response.status}")
+        logger.debug(f"Sleep for {delay} seconds.")
         await asyncio.sleep(delay)
         return await response.text()
 
@@ -53,8 +59,16 @@ async def select_one(soup: BeautifulSoup, selector: str, attr: str = "text"):
 async def download_image(session: aiohttp.ClientSession, url: str, payload=None, headers: dict = headers):
     headers["referer"] = "https://blogtruyen.vn"
     async with session.get(url, headers=headers) as response:
-        print(f"# Download image: {response.status}")
-        print("Sleep 1 second.")
+        logger.debug(f"# Download image: {response.status}")
+        logger.debug("Sleep 1 second.")
         await asyncio.sleep(1)
 
         return await response.read()
+
+
+async def cancel_gen(agen):
+    task = asyncio.create_task(agen.__anext__())
+    task.cancel()
+    with suppress(asyncio.CancelledError):
+        await task
+    await agen.aclose()

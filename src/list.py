@@ -2,6 +2,7 @@
 """
 import asyncio
 import json
+import time
 from enum import IntEnum
 from urllib import parse
 
@@ -9,7 +10,6 @@ import aiohttp
 from bs4 import BeautifulSoup
 
 import commons
-
 
 manga_url_pool = set()
 
@@ -40,7 +40,6 @@ class OrderBy(IntEnum):
 
 
 async def main(config: dict):
-
     with open("data/mangas.txt", "r", encoding='utf-8') as init_data:
         for line in init_data:
             manga_url_pool.add(line)
@@ -64,8 +63,10 @@ async def main(config: dict):
 async def parse_data(session, url, payload, config):
     html = await commons.request_get(session, url, payload, delay=0.2)
     manga_links = await get_manga_list(html, config)
-    print(json.dumps(manga_links, indent=4))
+    # print(json.dumps(manga_links, indent=4))
     manga_url_pool.update(manga_links)
+
+    return manga_links
 
 
 def start():
@@ -73,6 +74,20 @@ def start():
         config = json.load(config_file)
         loop = asyncio.new_event_loop()
         loop.run_until_complete(main(config))
+
+
+async def manga_list(config, last_update=time.time()):
+    async with aiohttp.ClientSession() as session:
+        url = config["search"]
+        last_page = await get_last_page(session, url)
+        payload = {
+            "page": 1
+        }
+        for page in range(1, last_page + 1):
+            payload["page"] = page
+            mangas = await parse_data(session, url, payload, config)
+            for manga in mangas:
+                yield manga
 
 
 if __name__ == '__main__':
