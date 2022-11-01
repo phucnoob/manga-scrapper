@@ -27,6 +27,9 @@ async def main(_config: dict):
     async with aiohttp.ClientSession() as session:
 
         synced = False if len(sys.argv) <= 1 else True
+
+        if not synced:
+            models.clear() # destroy any data whhen not in synced mode
         mangas = list.manga_list(_config) if synced else list.manga_list_reverse(config)
         async for manga_url in mangas:
             try:
