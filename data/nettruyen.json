@@ -11,6 +11,7 @@
     "description": "#item-detail .detail-content > p",
     "status": "#item-detail .status > p:last-child",
     "genres": "#item-detail .kind > p:last-child a",
-    "chapters": "#nt_listchapter .chapter a"
+    "chapters": "#nt_listchapter .chapter a",
+    "images": "#ctl00_divCenter .page-chapter img"
   }
 }

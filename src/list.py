@@ -51,7 +51,7 @@ async def main(config: dict):
         payload = {
             "page": 1
         }
-        for page in range(1, last_page + 1):
+        for page in range(2, last_page + 1):
             payload["page"] = page
             await parse_data(session, url, payload, config)
 
@@ -76,7 +76,7 @@ def start():
         loop.run_until_complete(main(config))
 
 
-async def manga_list(config, last_update=time.time()):
+async def manga_list(config):
     async with aiohttp.ClientSession() as session:
         url = config["search"]
         last_page = await get_last_page(session, url)
@@ -87,6 +87,20 @@ async def manga_list(config, last_update=time.time()):
             payload["page"] = page
             mangas = await parse_data(session, url, payload, config)
             for manga in mangas:
+                yield manga
+
+
+async def manga_list_reverse(config):
+    async with aiohttp.ClientSession() as session:
+        url = config["search"]
+        last_page = await get_last_page(session, url)
+        payload = {
+            "page": 1
+        }
+        for page in range(1, last_page + 1)[::-1]:
+            payload["page"] = page
+            mangas = await parse_data(session, url, payload, config)
+            for manga in mangas[::-1]:
                 yield manga
 
 
