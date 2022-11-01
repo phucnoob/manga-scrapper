@@ -28,9 +28,9 @@ headers = {
 
 async def request_get(session: aiohttp.ClientSession, url: str, payload=None, headers=headers, delay=5):
     async with session.get(url, headers=headers, params=payload) as response:
-        logger.debug(f"Url: {response.url}")
-        logger.debug(f"Response: {response.status}")
-        logger.debug(f"Sleep for {delay} seconds.")
+        logger.info(f"Url: {response.url}")
+        logger.info(f"Response: {response.status}")
+        logger.info(f"Sleep for {delay} seconds.")
         await asyncio.sleep(delay)
         return await response.text()
 

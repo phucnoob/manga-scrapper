@@ -1,5 +1,4 @@
 import sqlite3
-from typing import Any
 
 DDL_TABLES = """
 CREATE TABLE IF NOT EXISTS last_updated(
@@ -67,6 +66,16 @@ def insert_manga(url: str) -> int | None:
 
 def commit():
     conn.commit()
+
+
+def clear():
+    conn.executescript("""
+    drop table if exists chapters;
+    drop table if exists last_updated;
+    drop table if exists mangas;
+    """)
+
+    conn.executescript(DDL_TABLES)
 
 # print(last_updated())
 # Kiem tra xem
