@@ -17,8 +17,8 @@ import aiohttp
 
 import commons
 import info
-from src import list
-from src import models, upload
+import list
+import models, upload
 
 logging.basicConfig(level=logging.DEBUG)
 

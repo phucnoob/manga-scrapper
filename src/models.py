@@ -32,7 +32,7 @@ def manga_exists_in_database(url: str) -> bool:
     return result == 1
 
 
-def find_manga_from_url(url: str) -> int | None:
+def find_manga_from_url(url: str) -> int:
     cur.row_factory = lambda cursor, row: row[0]
     result_set = cur.execute("SELECT id, url FROM mangas WHERE url = ?", (url,)).fetchone()
     cur.row_factory = None
@@ -54,7 +54,7 @@ def insert_chapters(manga_id, chapters: list):
     cur.executemany("INSERT INTO chapters(manga_id, url) VALUES (?, ?)", records)
 
 
-def insert_manga(url: str) -> int | None:
+def insert_manga(url: str) -> int:
     manga_id = find_manga_from_url(url)
     if manga_id is None:
         cur.execute("INSERT INTO mangas(url) VALUES (?)", (url,))

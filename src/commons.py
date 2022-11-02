@@ -31,7 +31,7 @@ async def request_get(session: aiohttp.ClientSession, url: str, payload=None, he
         logger.info(f"Url: {response.url}")
         logger.info(f"Response: {response.status}")
         logger.info(f"Sleep for {delay} seconds.")
-        await asyncio.sleep(delay)
+        await asyncio.sleep(0)
         return await response.text()
 
 
